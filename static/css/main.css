@@ -1,0 +1,69 @@
+body {
+  margin: 0px;
+}
+
+#content {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#titlebar {
+  position: absolute;
+  font-family: 'Lobster', Georgia, Times, serif;
+  font-size: 30px;
+  color: #F0F7F4;
+  text-align: center;
+  left: 0px;
+  right: 0px;
+  padding-left: 10px;
+  line-height: 50px;
+  background-color: #32292F;
+}
+
+#titlebar img {
+  width: 50px;
+  height: 50px;
+}
+
+#toolbox {
+  position: absolute;
+  height: 50px;
+  top: 790px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#form {
+  position: absolute;
+  height: 50px;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#form input {
+  display: inline-block;
+}
+
+#image, #canvas {
+  position: absolute;
+  width: 1280px;
+  height: 720px;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.icon-span {
+  display: inline-block;
+}
+
+.icon-image {
+  width: 50px;
+  height: 50px;
+}
+
+.icon-span:hover {
+  cursor: pointer; cursor: hand;
+}

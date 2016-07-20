@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/js/filters.js"></script>
+    <script type="text/javascript" src="static/js/editor.js"></script>
+    <title>Cinemagraph Maker</title>
+  </head>
+  <body>
+    <div id='content'>
+      <span id="titlebar">Cinemagraph Maker</span>
+      <div id="toolbox">
+        <span class="icon-span" id="paint" data-placement="bottom" title="Paint"><img class="icon-image" src="static/img/paint.png"></span>
+        <span class="icon-span" id="contour" data-placement="bottom" title="Contour"><img class="icon-image" src="static/img/contour.png"></span>
+        <span class="icon-span" id="eraser" data-placement="bottom" title="Eraser"><img class="icon-image" src="static/img/eraser.png"></span>
+        <span class="icon-span" id="action" data-placement="bottom" title="Process"><img class="icon-image" src="static/img/action.png"></span>
+      </div>
+      <img id="image" src="{{ image }}"/>
+      <canvas id="canvas"/>
+    </div>
+  </body>
+</html>
