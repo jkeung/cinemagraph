@@ -17,6 +17,7 @@ $(function() {
   var paint = $('#paint');
   var contour = $('#contour');
   var eraser = $('#eraser');
+  var action = $('#action');
   var offset = canvas.offset();
 
   function getMousePosition(e) {
@@ -61,19 +62,16 @@ $(function() {
     if (startPoint != null && endPoint != null) {
       drawOutlineRect(startPoint, endPoint);
     }
-    if (subImage != null) {
-        context.putImageData(subImage, 0, 0);
-    }
   }
 
   function getContours(point1, point2) {
     if (point2.x < point1.x) {
-        temp = point1.x;
+        temp = point2.x;
         point2.x = point1.x;
         point1.x = temp;
     }
     if (point2.y < point1.y) {
-        temp = point1.y;
+        temp = point2.y;
         point2.y = point1.y;
         point1.y = temp; 
     } 
@@ -91,12 +89,10 @@ $(function() {
     cropContext.canvas.height = height;
     cropContext.drawImage(scaleContext.canvas, point1.x, point1.y, width, height, 0, 0, width, height);
     var cropImage = cropContext.getImageData(0, 0, width, height);
-    var blurImage = Filters.filterImage(Filters.convolute, cropImage, [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9]);
-    var threshImage = Filters.filterImage(Filters.threshold_average, blurImage, false);
+    var threshImage = Filters.filterImage(Filters.threshold_average, cropImage, true);
     var floodImage = Filters.filterImage(Filters.floodfill, threshImage, 0, 0, {r: 255, g: 255, b: 255, a: 255}); 
     var inverseImage = Filters.filterImage(Filters.inverse, floodImage);
-    var filledImage = Filters.filterImage(Filters.combine, threshImage, inverseImage);
-    subImage = floodImage;
+    var filledImage = Filters.filterImage(Filters.combine, threshImage, threshImage);
     contours.push({x: point1.x, y: point1.y, image: filledImage});
   }
 
@@ -111,6 +107,10 @@ $(function() {
     circles = [];
     contours = [];
     redraw();
+  });
+  action.click(function() {
+    $('#data').val(canvas[0].toDataURL('image/png'));
+    $('#form').submit();
   });
   canvas.mousedown(function(e) {
     isDrawing = true;
