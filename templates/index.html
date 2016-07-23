@@ -1,9 +1,21 @@
-
-{% block content %}
-    <div class="container">
-        <div style="width: 60%; margin: 10px auto 50px auto; text-align: justify">
-            <h2>Welcome</h2>
-
-        </div>
+<html>
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/js/upload.js"></script>
+    <title>Cinemagraph Maker</title>
+  </head>
+  <body>
+    <div id='content'>
+      <span id="titlebar">Cinemagraph Maker</span>
+      <form id="form" method=POST enctype=multipart/form-data action="{{ url_for('upload') }}">
+        <input type="file" name="file">
+        <span class="icon-span" id="upload" data-placement="bottom" title="Upload"><img class="icon-image" src="static/img/upload.png"></span>
+        <input style="width:0px;visibility:hidden" type="submit" id="submit">
+      </form>
     </div>
-{% endblock %}
+  </body>
+</html>
