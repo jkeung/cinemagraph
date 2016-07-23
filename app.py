@@ -21,6 +21,14 @@ def upload():
         return extract_first_frame(filename)
     return render_template('500.html')
 
+@app.route('/mask', methods=['POST'])
+def mask():
+    data = request.form['data']
+    name = request.form['name'] 
+    print data
+    print name
+    return render_template('index.html')
+
 def extract_first_frame(filename):
     name = filename[0:filename.find('.')]
     command = [ 'rm',

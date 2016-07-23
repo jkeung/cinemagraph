@@ -20,7 +20,7 @@
       </div>
       <img id="image" src="{{ image }}"/>
       <canvas id="canvas"/>
-      <form id="form" action="/mask">
+      <form id="form" action="/mask" method="post">
         <input type="hidden" id="data" name="data"/>
         <input type="hidden" id="name" name="name" value="{{ image }}"/>
       </form>
