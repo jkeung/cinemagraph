@@ -17,11 +17,11 @@ $(function() {
   var paint = $('#paint');
   var contour = $('#contour');
   var eraser = $('#eraser');
+  var offset = canvas.offset();
 
   function getMousePosition(e) {
-    var p = $(e.target).offset(),
-        x = Math.round((e.clientX || e.pageX) - p.left),
-        y = Math.round((e.clientY || e.pageY) - p.top);
+    var x = e.pageX - offset.left,
+        y = e.pageY - offset.top;
     return { x: x, y: y };
   };
 
@@ -61,9 +61,22 @@ $(function() {
     if (startPoint != null && endPoint != null) {
       drawOutlineRect(startPoint, endPoint);
     }
+    if (subImage != null) {
+        context.putImageData(subImage, 0, 0);
+    }
   }
 
   function getContours(point1, point2) {
+    if (point2.x < point1.x) {
+        temp = point1.x;
+        point2.x = point1.x;
+        point1.x = temp;
+    }
+    if (point2.y < point1.y) {
+        temp = point1.y;
+        point2.y = point1.y;
+        point1.y = temp; 
+    } 
     var width = point2.x - point1.x;
     var height = point2.y - point1.y;
     if (width == 0 || height == 0) {
@@ -78,11 +91,12 @@ $(function() {
     cropContext.canvas.height = height;
     cropContext.drawImage(scaleContext.canvas, point1.x, point1.y, width, height, 0, 0, width, height);
     var cropImage = cropContext.getImageData(0, 0, width, height);
-    console.log(cropImage);
-    var threshImage = Filters.filterImage(Filters.threshold, cropImage, 240, true);
+    var blurImage = Filters.filterImage(Filters.convolute, cropImage, [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9]);
+    var threshImage = Filters.filterImage(Filters.threshold_average, blurImage, false);
     var floodImage = Filters.filterImage(Filters.floodfill, threshImage, 0, 0, {r: 255, g: 255, b: 255, a: 255}); 
     var inverseImage = Filters.filterImage(Filters.inverse, floodImage);
     var filledImage = Filters.filterImage(Filters.combine, threshImage, inverseImage);
+    subImage = floodImage;
     contours.push({x: point1.x, y: point1.y, image: filledImage});
   }
 
