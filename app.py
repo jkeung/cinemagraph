@@ -35,19 +35,23 @@ def mask():
     
     imgstr = re.search(r'base64,(.*)', datauri).group(1)
 
+    # create mask
     with open('static/input/{0}/{0}_mask.png'.format(name), 'wb') as f:
         f.write(base64.b64decode(imgstr))
 
+    # create directory for input frames
     command = [ 'mkdir',
                 '-pv',
                 'static/frames/{0}'.format(name)]
     pipe = sp.Popen(command, stdout = sp.PIPE)
 
+    # create directory for output
     command = [ 'mkdir',
                 '-pv',
                 'static/output/{0}'.format(name)]
     pipe = sp.Popen(command, stdout = sp.PIPE)
 
+    # extract frames from video
     command = [ FFMPEG_BIN,
                 '-i', 'static/video/' + filename,
                 '-r', '15',
@@ -58,6 +62,7 @@ def mask():
     pipe = sp.Popen(command, stdout = sp.PIPE, bufsize=2**16)
     pipe.wait()
 
+    # apply blending and output frames
     images = readImages("static/frames/{0}/".format(name))
     first = images[0]
     mask = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
@@ -68,6 +73,7 @@ def mask():
         output = blend(first, image, mask)
         cv2.imwrite("static/output/{0}/{1}.png".format(name, i), output)
 
+    # bring frames back together
     command = [ FFMPEG_BIN,
                 '-i', 'static/output/{0}/%d.png'.format(name),
                 'static/output/{0}/{0}.gif'.format(name)]
