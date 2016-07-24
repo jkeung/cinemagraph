@@ -28,7 +28,7 @@ def upload():
         return extract_first_frame(filename)
     return render_template('500.html')
 
-@app.route('/mask', methods=['POST'])
+@app.route('/view', methods=['POST'])
 def mask():
 
     datauri = request.form['data']

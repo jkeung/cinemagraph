@@ -89,7 +89,7 @@ $(function() {
     cropContext.canvas.height = height;
     cropContext.drawImage(scaleContext.canvas, point1.x, point1.y, width, height, 0, 0, width, height);
     var cropImage = cropContext.getImageData(0, 0, width, height);
-    var threshImage = Filters.filterImage(Filters.threshold_average, cropImage, true);
+    var threshImage = Filters.filterImage(Filters.threshold_average, cropImage, false);
     var floodImage = Filters.filterImage(Filters.floodfill, threshImage, 0, 0, {r: 255, g: 255, b: 255, a: 255}); 
     var inverseImage = Filters.filterImage(Filters.inverse, floodImage);
     var filledImage = Filters.filterImage(Filters.combine, threshImage, inverseImage);
