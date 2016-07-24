@@ -61,23 +61,18 @@ def mask():
     pipe.wait()
 
     images = readImages("static/frames/{0}/".format(name))
+    black_img = images[0]
+    black_img.astype(float)
     mask_img = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
     mask_img[mask_img != 0] = 1
     mask_img.astype(float)
 
     for i, image in enumerate(images):
-        black_img = images[0]
-        black_img.astype(float)
+        
         white_img = image
         white_img.astype(float)
 
-        print "Applying blending."
-        lapl_pyr_black_layers = []
-        lapl_pyr_white_layers = []
-        gauss_pyr_black_layers = []
-        gauss_pyr_white_layers = []
-        gauss_pyr_mask_layers = []
-        out_pyr_layers = []
+        print "Applying blending to frame {0} of {1}.".format(i, len(images))
         out_layers = []
 
         for channel in range(3):
