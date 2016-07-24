@@ -61,29 +61,14 @@ def mask():
     pipe.wait()
 
     images = readImages("static/frames/{0}/".format(name))
-    black_img = images[0]
-    black_img.astype(float)
-    mask_img = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
-    mask_img[mask_img != 0] = 1
-    mask_img.astype(float)
+    first = images[0]
+    mask = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
+    mask[mask != 0] = 1
 
     for i, image in enumerate(images):
-        
-        white_img = image
-        white_img.astype(float)
-
         print "Applying blending to frame {0} of {1}.".format(i, len(images))
-        out_layers = []
-
-        for channel in range(3):
-              lapl_pyr_black, lapl_pyr_white, gauss_pyr_black, gauss_pyr_white, gauss_pyr_mask,\
-                  outpyr, outimg = run_blend(black_img[:,:,channel], white_img[:,:,channel], \
-                                   mask_img[:,:,channel])
-
-        out_layers.append(outimg)
-        outimg = cv2.merge(out_layers)
-
-        cv2.imwrite("static/output/{0}/{1}.png".format(name, i), outimg)
+        output = blend(first, image, mask)
+        cv2.imwrite("static/output/{0}/{1}.png".format(name, i), output)
 
     command = [ FFMPEG_BIN,
                 '-i', 'static/output/{0}/%d.png'.format(name),
@@ -117,7 +102,6 @@ def readImages(image_dir):
 
     return images
 
-
 def extract_first_frame(filename):
     name = filename[0:filename.find('.')]
     command = [ 'rm',
@@ -141,33 +125,59 @@ def extract_first_frame(filename):
 
     return render_template('process.html', image='static/input/{0}/{0}.png'.format(name), name=name, filename=filename)
 
-def run_blend(black_image, white_image, mask):
-    """ This function administrates the blending of the two images according to 
-    mask.
+def blend(image1, image2, mask):
+    # generate Gaussian pyramid for image 1
+    G = image1.astype(np.float32)
+    gpA = [G]
+    for i in xrange(6):
+        G = cv2.pyrDown(G)
+        gpA.append(G.astype(np.float32))
 
-    Assume all images are float dtype, and return a float dtype.
-    """
+    # generate Gaussian pyramid for image 2
+    G = image2.astype(np.float32)
+    gpB = [G]
+    for i in xrange(6):
+        G = cv2.pyrDown(G)
+        gpB.append(G.astype(np.float32))
 
-    # Automatically figure out the size
-    min_size = min(black_image.shape)
-    depth = int(math.floor(math.log(min_size, 2))) - 4 # at least 16x16 at the highest level.
+    # generate Gaussian pyramid for mask
+    G = mask.astype(np.float32)
+    gpM = [G]
+    for i in xrange(6):
+        G = cv2.pyrDown(G)
+        gpM.append(G.astype(np.float32))
 
-    gauss_pyr_mask = assignment6.gaussPyramid(mask, depth)
-    gauss_pyr_black = assignment6.gaussPyramid(black_image, depth)
-    gauss_pyr_white = assignment6.gaussPyramid(white_image, depth)
 
-    lapl_pyr_black  = assignment6.laplPyramid(gauss_pyr_black)
-    lapl_pyr_white = assignment6.laplPyramid(gauss_pyr_white)
+    # generate Laplacian Pyramid for image 1
+    lpA = [gpA[5]]
+    for i in xrange(5,0,-1):
+        rows,cols = gpA[i-1].shape[:2]
+        GE = cv2.pyrUp(gpA[i])[:rows,:cols]
+        L = cv2.subtract(gpA[i-1],GE)
+        lpA.append(L)
 
-    outpyr = assignment6.blend(lapl_pyr_white, lapl_pyr_black, gauss_pyr_mask)
-    outimg = assignment6.collapse(outpyr)
+    # generate Laplacian Pyramid for image 2
+    lpB = [gpB[5]]
+    for i in xrange(5,0,-1):
+        rows,cols = gpB[i-1].shape[:2]
+        GE = cv2.pyrUp(gpB[i])[:rows,:cols]
+        L = cv2.subtract(gpB[i-1],GE)
+        lpB.append(L)
 
-    outimg[outimg < 0] = 0 # blending sometimes results in slightly out of bound numbers.
-    outimg[outimg > 255] = 255
-    outimg = outimg.astype(np.uint8)
+    # Now add the images with mask
+    LS = []
+    length = len(lpA)
+    for i in range(length):
+        LS.append(lpB[i]*gpM[length-i-1] + lpA[i]*(1-gpM[length-i-1]))
 
-    return lapl_pyr_black, lapl_pyr_white, gauss_pyr_black, gauss_pyr_white, \
-      gauss_pyr_mask, outpyr, outimg
+    # now reconstruct
+    ls_ = LS[0]
+    for i in xrange(1,6):
+        rows,cols = LS[i].shape[:2]
+        ls_ = cv2.pyrUp(ls_)[:rows,:cols]
+        ls_ = cv2.add(ls_, LS[i])
+    ls_ = np.clip(ls_, 0, 255)
+    return ls_.astype(np.uint8)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

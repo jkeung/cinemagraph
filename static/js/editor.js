@@ -92,7 +92,7 @@ $(function() {
     var threshImage = Filters.filterImage(Filters.threshold_average, cropImage, true);
     var floodImage = Filters.filterImage(Filters.floodfill, threshImage, 0, 0, {r: 255, g: 255, b: 255, a: 255}); 
     var inverseImage = Filters.filterImage(Filters.inverse, floodImage);
-    var filledImage = Filters.filterImage(Filters.combine, threshImage, threshImage);
+    var filledImage = Filters.filterImage(Filters.combine, threshImage, inverseImage);
     contours.push({x: point1.x, y: point1.y, image: filledImage});
   }
 
