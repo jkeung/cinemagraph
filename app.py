@@ -7,6 +7,8 @@ import base64
 import os
 from glob import glob
 import numpy as np
+import math
+import assignment6
 
 FFMPEG_BIN = "ffmpeg"
 
@@ -59,11 +61,34 @@ def mask():
     pipe.wait()
 
     images = readImages("static/frames/{0}/".format(name))
-    mask = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
-    mask[mask != 0] = 1
+    mask_img = cv2.imread("static/input/{0}/{0}_mask.png".format(name))
+    mask_img[mask_img != 0] = 1
+    mask_img.astype(float)
 
     for i, image in enumerate(images):
-        cv2.imwrite("static/output/{0}/{1}.png".format(name, i), image*mask + images[0]*(1-mask))
+        black_img = images[0]
+        black_img.astype(float)
+        white_img = image
+        white_img.astype(float)
+
+        print "Applying blending."
+        lapl_pyr_black_layers = []
+        lapl_pyr_white_layers = []
+        gauss_pyr_black_layers = []
+        gauss_pyr_white_layers = []
+        gauss_pyr_mask_layers = []
+        out_pyr_layers = []
+        out_layers = []
+
+        for channel in range(3):
+              lapl_pyr_black, lapl_pyr_white, gauss_pyr_black, gauss_pyr_white, gauss_pyr_mask,\
+                  outpyr, outimg = run_blend(black_img[:,:,channel], white_img[:,:,channel], \
+                                   mask_img[:,:,channel])
+
+        out_layers.append(outimg)
+        outimg = cv2.merge(out_layers)
+
+        cv2.imwrite("static/output/{0}/{1}.png".format(name, i), outimg)
 
     command = [ FFMPEG_BIN,
                 '-i', 'static/output/{0}/%d.png'.format(name),
@@ -120,6 +145,34 @@ def extract_first_frame(filename):
     pipe.wait()
 
     return render_template('process.html', image='static/input/{0}/{0}.png'.format(name), name=name, filename=filename)
+
+def run_blend(black_image, white_image, mask):
+    """ This function administrates the blending of the two images according to 
+    mask.
+
+    Assume all images are float dtype, and return a float dtype.
+    """
+
+    # Automatically figure out the size
+    min_size = min(black_image.shape)
+    depth = int(math.floor(math.log(min_size, 2))) - 4 # at least 16x16 at the highest level.
+
+    gauss_pyr_mask = assignment6.gaussPyramid(mask, depth)
+    gauss_pyr_black = assignment6.gaussPyramid(black_image, depth)
+    gauss_pyr_white = assignment6.gaussPyramid(white_image, depth)
+
+    lapl_pyr_black  = assignment6.laplPyramid(gauss_pyr_black)
+    lapl_pyr_white = assignment6.laplPyramid(gauss_pyr_white)
+
+    outpyr = assignment6.blend(lapl_pyr_white, lapl_pyr_black, gauss_pyr_mask)
+    outimg = assignment6.collapse(outpyr)
+
+    outimg[outimg < 0] = 0 # blending sometimes results in slightly out of bound numbers.
+    outimg[outimg > 255] = 255
+    outimg = outimg.astype(np.uint8)
+
+    return lapl_pyr_black, lapl_pyr_white, gauss_pyr_black, gauss_pyr_white, \
+      gauss_pyr_mask, outpyr, outimg
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
