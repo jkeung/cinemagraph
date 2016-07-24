@@ -7,8 +7,6 @@ import base64
 import os
 from glob import glob
 import numpy as np
-import math
-import assignment6
 
 FFMPEG_BIN = "ffmpeg"
 
@@ -146,7 +144,6 @@ def blend(image1, image2, mask):
     for i in xrange(6):
         G = cv2.pyrDown(G)
         gpM.append(G.astype(np.float32))
-
 
     # generate Laplacian Pyramid for image 1
     lpA = [gpA[5]]
