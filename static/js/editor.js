@@ -57,7 +57,7 @@ $(function() {
     }
     for (var i in circles) {
       var point = circles[i];
-      drawCircle(point.x, point.y, 10);
+      drawCircle(point.x, point.y, 30);
     }
     if (startPoint != null && endPoint != null) {
       drawOutlineRect(startPoint, endPoint);
